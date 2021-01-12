@@ -1,2 +1,2 @@
 # Vortex
-Programme python modélisant des vortex dans un fluide. Le fluide et le calcul de ses propriètés est géré par la classe "sea". Le résultat est enregistré en gif ou en mp4. Nécessite ffmpeg, numpy, matplotlib.
+Programme python modélisant l'évolution des vortex dans un fluide. Le fluide et ses propriétés est représenté par la classe "sea". Les méthodes de la classe sea sont basée sur l'équation de la vorticité et la fonction de couran. Le résultat est enregistré en gif ou en mp4. Nécessite ffmpeg, numpy, matplotlib. Possibilité de créer des vortex circulaires avec la methode vortex, ou des feuilles de vorticité avec la méthode line.
