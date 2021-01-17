@@ -4,14 +4,16 @@ Created on Sun Jan 10 11:45:13 2021
 
 @author: tugdual
 """
-from math import ceil,floor
 import numpy as np
+from math import floor, ceil
+from solver import jellyfish
+#print(jellyfish.__doc__)
 
 class sea():
     """La classe sea modélise une étendue de fluide en 2 dimensions avec comme
     attributs les grilles d'espace X et Y, la vorticité W, 
     la fonction de courant Phi et le pas de la grille h"""
-    def __init__(self,L,H,resolution):
+    def __init__(self, resolution, L = float(),H  =float()):
         self._xmax = L/2
         self._ymax = H/2
         q = resolution
@@ -25,19 +27,30 @@ class sea():
         elif L > H:
             self._h = L/q
             self._qx = q
-            self._qy = int(round(H/self._h,0))
+            self._qy = int(H/self._h,0)
 
         else:
             self._h = H/q
             self._qy = q
-            self._qx = int(round(L/self._h,0))
+            self._qx = int(L/self._h,0)
         
         x = np.linspace(-self._xmax, self._xmax,self._qx)
         y = np.linspace(-self._ymax, self._ymax,self._qy)    
         self._X, self._Y = np.meshgrid(x,y)
         self._W = self._X*0
         self._Phi = self._X*0
-        self.Poisson()
+        
+        i_range = self._qy - 2
+        j_range = self._qx - 2
+        
+        slct_grid = np.mgrid[0:i_range,0:j_range]+1 
+        
+        i_space = slct_grid[0,:,:]
+        j_space = slct_grid[1,:,:]
+        
+        self._i = i_space.reshape((1,j_range*i_range))[0,:]
+        self._j = j_space.reshape((1,j_range*i_range))[0,:]            
+    
     
     def W(self):
         return self._W
@@ -47,12 +60,18 @@ class sea():
         return self._X
     def Y(self):
         return self._Y
+    def H(self):
+        return self._h
+    def qx(self):
+        return self._qx
+    def qy(self):
+        return self._qy
     
     def vortex(self,x,y,sens,largeur=0.1):
         """Créé un vortex de coordonnées x et y"""
         if sens != 0:
             R = np.sqrt((self._X-x)**2 + (self._Y-y)**2)
-            self._W = self._W + sens/(largeur+R**2)
+            self._W = self._W + sens*10*np.exp(-R**2*100/(largeur)) # sens*largeur*100/(largeur+R**2)
     
     def line(self,x=-0.5,y=0,L=1,vort=10, e=2):
         """Crée une ligne sur laquelle est concentrée la vorticité,
@@ -60,42 +79,30 @@ class sea():
         x1 = floor(self._qx/2+ x*self._qx/(2*self._xmax))
         l = floor(L*self._qx/(2*self._xmax))
         y1 = floor(self._qy/2 + y*self._qy/(2*self._xmax))
-        self._W[y1:y1+e,x1:x1+l-1] = vort
-    
+        e = e*self._qy/(4*self._ymax)
+        e = ceil(e)
+        self._W[y1+e:y1+e+1,x1:x1+l-1] = vort/2 #+ self._W[y1+e:y1+e+1,x1:x1+l-1]
+        self._W[y1-e:y1+e,x1:x1+l-1] = vort #+ self._W[y1-e:y1+e,x1:x1+l-1]
+        self._W[y1-e-1:y1,x1:x1+l-1] = vort/2# + self._W[y1-e-1:y1,x1:x1+l-1]
+        self._W[y1-e:y1+e,x1-1] = vort/2 #+ self._W[y1-e:y1+e,x1-1]
+        self._W[y1-e:y1+e,x1+l-1] = vort/2 #+ self._W[y1-e:y1+e,x1+l-1]
+        
     def noise(self,intensity):
         self._W = self._W + ((np.random.random(self._W.shape) - 
-                   np.random.random(self._W.shape)))**6*intensity
+                   np.random.random(self._W.shape)))**7*intensity
      
-    def Poisson(self, delta_conv = 0.0001):
-        """ Résout l'équation de poisson avec W comme fonction source""" 
-        ecart = 1
-        qx = self._qx
-        qy = self._qy
-        #précision de la solution
-        while ecart > delta_conv:
-            Phi0 = self._Phi
-            self._Phi[1:qy-2,1:qx-2] = 0.25*(self._h**2*self._W[1:qx-2,1:qy-2]
-                                             + Phi0[2:qx-1,1:qy-2] 
-                                             + Phi0[0:qx-3,1:qy-2]
-                                             + Phi0[1:qx-2,2:qy-1]
-                                             + Phi0[1:qx-2,0:qy-3])
-        
-            ecart = np.amax(np.abs(self._Phi-Phi0))
 
 
 
-    def Vortex_solv(self, tmax=1, dt=0.0001, delta_convgce=0.0001):
-        """ Résout l'équation de la vorticité"""
-        n_it = ceil(tmax/dt)
-        h = self._h
-        #résolution de l'equation
-        for i in range(n_it):
-            gradW_x, gradW_y, = np.gradient(self._W, h)
-            gradPhi_x, gradPhi_y = np.gradient(self._Phi, h)   
-            #terme d'advection
-            advec = gradPhi_x*gradW_y - gradPhi_y*gradW_x
-            #solution 
-            self._W = self._W + dt* advec 
-            #résolution de la fonction de courant, équation de Poisson
-            self.Poisson()            
+    def Vortex_solv(self, tmax=1, dt=0.0001, delta_convgce=0.0001, nu = 0,
+                    t_wall=0, b_wall=0):
+        erreur = 0
+        """ Résout l'équation de la vorticité"""     
+        self._W, self._Phi, erreur = jellyfish(self._W, self._Phi, tmax, dt,
+                                          self._h, delta_convgce, nu,
+                                          t_wall ,b_wall, erreur)
+        return erreur
+    
+
+
 
