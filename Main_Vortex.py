@@ -16,8 +16,8 @@ from time import time
             #Paramètres de base de l'affichage
 
 #uwall est la vitesse du fluide au contact du bord supérieur et inférieur
-u_t_wall = 0
-u_b_wall = 0
+u_t_wall = -1
+u_b_wall = 1
 #viscosité
 nu_fluide= 15.6*10**-5
 #Temps de modélisation entre chaque image enregistrée
@@ -38,10 +38,10 @@ while True:
                 taille = 4
                 break
             elif rep_hd == 'y':
-                reso = 300
+                reso = 400
                 delt = 0.0001
                 conv = 0.0001
-                taille = 7
+                taille = 12
                 break
             else:
                 print('[y/n]?')
@@ -54,30 +54,32 @@ while True:
 pond = sea(reso, 8.0, 8.0)
             #Création de vortex dans pond.
             
-#pond.noise(40)
 
+pond.rand(20)
+pond.noise(15)
 #pond.line() crée une ligne de vorticité
 #pond.line(-2,0.5,4,50,0.04)
 #pond.line(-2,-0.5,4,50,0.04)
 
-pond.vortex( -0.75, 0.7, sens = 9, largeur = 8)
-pond.vortex( -0.75, -0.7, sens = -9, largeur = 8)
-pond.vortex( -2.5, 0.7, sens = 9, largeur = 8)
-pond.vortex( -2.5, -0.7, sens = -9, largeur = 8)
+#pond.vortex( -1, 0.7, sens = 30, largeur = 3)
+#pond.vortex( -1, -0.7, sens = -30, largeur = 3)
+#pond.vortex( -2.5, 0.7, sens = 30, largeur = 3)
+#pond.vortex( -2.5, -0.7, sens = -30, largeur = 3)
 
 
 #résolution de l'equation affin d'initialiser
 pond.Vortex_solv(tmax = 0.001, dt = delt, delta_convgce = conv,
 		nu = nu_fluide, t_wall= u_t_wall, b_wall= u_b_wall)
-#W_max = np.amax(pond.W())
+W_max = np.amax(pond.W()[2:pond.qy()-2, 2:pond.qx()-2])
 #Récupération de la grille d'espace.  
 X = pond.X()
 Y = pond.Y()
 
 
-#Affichage des conditions initiales. 
+#Affichage des conditions initiales.
+print('Patientez...') 
 plt.subplots(figsize=(taille,taille))
-plt.pcolormesh(X,Y, pond.W(),cmap = 'viridis', shading= shade, vmax = W_max) 
+plt.pcolormesh(X,Y, (pond.W()**2)**0.5,cmap = 'viridis', shading= shade, vmax = W_max) 
 plt.axis('off')
 plt.tight_layout(pad = 0) 
 plt.show()
@@ -186,7 +188,7 @@ while t_max > 0:
     print('temps moyen d\'execution par secondes simulées:', round(moyenne,3))
     #Affichage de l'état de pond après calcul jusqu'au temps demandé.
     plt.subplots(figsize=(taille,taille))
-    plt.pcolormesh(X,Y, pond.W(), cmap = 'viridis', shading = shade , vmax = W_max)
+    plt.pcolormesh(X,Y, (pond.W()**2)**0.5, cmap = 'viridis', shading = shade , vmax = W_max)
     plt.axis('off')
     plt.tight_layout(pad = 0)
     print('temps final simulé : ', round(somme_t,2))
@@ -225,7 +227,7 @@ plt.axis('off')
 plt.tight_layout(pad = 0)
 img = ax1.pcolormesh(X,Y,(pond.W()**2)**0.5, 
                            cmap = 'viridis', shading= shade, vmax = W_max) 
-
+                            
 enr = False
 if direct == False and (gif or mp4) :
 	#enregistrer?
@@ -247,6 +249,8 @@ if direct == False and (gif or mp4) :
 		except TypeError:
 		    print('Tu fais quoi là !?')
 
+writer = animation.FFMpegWriter(fps = int(2*1/Delta_t_img), bitrate = 5000)
+
 if enr or (direct and (mp4 or gif)):
 	#Fonction permetant de faire défiler les images de la vorticité
 	def diapo(n):
@@ -257,17 +261,15 @@ if enr or (direct and (mp4 or gif)):
 		
 	#Création de l'animation
 	anim = animation.FuncAnimation(fig1, diapo,
-		                               frames=len(frames),
-		                               interval=Delta_t_img*250,
-		                               repeat = True)
+		                               frames=len(frames), repeat = True)
 	print('Patientez ...')
 	if mp4:   
 		file_name = 'vortx.mp4'
-		anim.save(file_name, dpi=96, writer= 'ffmpeg' )
+		anim.save(file_name, writer= writer )
 
 	if gif:   
 		file_name = 'vortx.gif'
-		anim.save(file_name, dpi=96, writer= 'ffmpeg' )
+		anim.save(file_name, writer= 'ffmpeg' )
 		
 print('FIN')	
 

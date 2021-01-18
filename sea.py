@@ -7,6 +7,7 @@ Created on Sun Jan 10 11:45:13 2021
 import numpy as np
 from math import floor, ceil
 from solver import jellyfish
+from random import uniform 
 #print(jellyfish.__doc__)
 
 class sea():
@@ -91,7 +92,23 @@ class sea():
         self._W = self._W + ((np.random.random(self._W.shape) - 
                    np.random.random(self._W.shape)))**7*intensity
      
-
+    def rand(self, intensity):
+        for i in range(7):
+            x = uniform(-self._xmax*0.7, self._xmax*0.7)
+            y = uniform(-self._ymax*0.7, self._ymax*0.7)
+            largeur = uniform(1,20)
+            if largeur > 8: 
+                sens = uniform(-(intensity)**0.7,intensity**0.7)
+            else:
+                sens = uniform(-intensity,intensity)
+            self.vortex( x, y, sens, largeur)
+        for i in range(4):
+            x = uniform(-self._xmax*0.7, self._xmax*0.7)
+            y = uniform(-self._ymax*0.7, self._ymax*0.7)
+            largeur = uniform(1,8)
+            sens = uniform(-intensity**0.9,intensity**0.9)
+            self.vortex( x, y, sens, largeur)
+        
 
 
     def Vortex_solv(self, tmax=1, dt=0.0001, delta_convgce=0.0001, nu = 0,
