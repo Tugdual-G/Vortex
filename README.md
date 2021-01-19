@@ -9,3 +9,4 @@ Module solveur en fortran à compiler avec la comande:
 
 python3 -m numpy.f2py -c -m solver solver.f90
 
+Méthode des différences finies basée sur la vorticité et la fonction de courrant, équation de poisson résolue par méthode Gauss-Seidel. 
