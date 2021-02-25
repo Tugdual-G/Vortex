@@ -67,6 +67,8 @@ class sea():
         return self._qx
     def qy(self):
         return self._qy
+    def set_W(self, A):
+        self._W = A
     
     def vortex(self,x,y,sens,largeur=0.1):
         """Créé un vortex de coordonnées x et y"""
@@ -92,34 +94,57 @@ class sea():
         self._W = self._W + ((np.random.random(self._W.shape) - 
                    np.random.random(self._W.shape)))**7*intensity
      
-    def rand(self, intensity):
-        for i in range(7):
-            x = uniform(-self._xmax*0.7, self._xmax*0.7)
-            y = uniform(-self._ymax*0.7, self._ymax*0.7)
+    def rand(self, intensity, L = 0.7, N = 100):
+        x = uniform(-self._xmax*L, self._xmax*L)
+        y = uniform(-self._ymax*L, self._ymax*L)
+        largeur = 0
+        i = 1        
+        xl = []
+        yl = []
+        xl.append(x)
+        yl.append(y)
+        while i < N:
+            occupe = False
+            largeur0 = largeur
             largeur = uniform(1,20)
-            if largeur > 8: 
-                sens = uniform(-(intensity)**0.7,intensity**0.7)
-            else:
-                sens = uniform(-intensity,intensity)
-            self.vortex( x, y, sens, largeur)
-        for i in range(4):
+            j = 1
+            while occupe == False and j<len(xl):
+                
+                if (((x-xl[j-1])**2+(y-yl[j-1])**2)**0.5)<(((largeur+largeur0)**0.7)*4/100) :
+                    occupe = True
+                j +=1    
+            if occupe == False:
+                i += 1                
+                if largeur > 8: 
+                    sens = uniform(-intensity**0.8,intensity**0.8)
+                else:
+                    sens = uniform(-intensity,intensity)
+                self.vortex( x, y, sens, largeur)
+                xl.append(x)
+                yl.append(y)                
+                
+            x = uniform(-self._xmax*L, self._xmax*L)
+            y = uniform(-self._ymax*L, self._ymax*L)
+            
+        
+        
+        """for i in range(10):
             x = uniform(-self._xmax*0.7, self._xmax*0.7)
             y = uniform(-self._ymax*0.7, self._ymax*0.7)
             largeur = uniform(1,8)
             sens = uniform(-intensity**0.9,intensity**0.9)
-            self.vortex( x, y, sens, largeur)
+            self.vortex( x, y, sens, largeur)"""
         
 
 
-    def Vortex_solv(self, tmax=1, dt=0.0001, delta_convgce=0.0001, nu = 0,
-                    t_wall=0, b_wall=0):
+    def Vortex_solv(self, tmax=1, dt=0.001, delta_convgce=0.0001, nu = 0,
+                    t_wall=0, b_wall=0, no_slip = False):
         erreur = 0
         """ Résout l'équation de la vorticité"""     
         self._W, self._Phi, erreur = jellyfish(self._W, self._Phi, tmax, dt,
                                           self._h, delta_convgce, nu,
-                                          t_wall ,b_wall, erreur)
+                                          t_wall ,b_wall, erreur, no_slip)
         return erreur
     
-
 
 
