@@ -1,5 +1,6 @@
 # Vortex
 Programme python modélisant l'évolution des vortex dans un fluide.
+Possibilité de remplir le domaine de vortex générés aléatoirements.
 
 Méthode basée sur la vorticité et la fonction de courrant, équation de poisson résolue par méthode Gauss-Seidel. L'intégration en temps est réalisée seulon la méthode d'Euler ou Runge-Kutta 4.  
 
