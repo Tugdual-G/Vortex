@@ -55,7 +55,7 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 			& phi(2, list_j-1) + phi(2, list_j+1))
 			
 		ecart = maxval((phi0 - phi)**2)
-		if (i > 10000000) then
+		if (i > 100000) then
 			erreur = 1
 			ecart = 0 
 		end if
@@ -102,72 +102,123 @@ subroutine jellyfish(w, phi, tmax, dt, h, delta_convgce, nu, u_top_wall, u_bot_w
 	k2(1:qi,1:qj) = 0
 	k3(1:qi,1:qj) = 0
 	
-	do i = 1, n_it, 1
-		call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
-		if (no_slip) then
+	if (no_slip) then
+		do i = 1, n_it, 1
+			call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
+			
 			w(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
 			w(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
 			w(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
 			w(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
-		end if
-		diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
-			& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
-		
-		advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
-			& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
-		k0(2:qi-1,2:qj-1) = dt*(advec + diffusion)
-		
-!******** Second point Runge Kutta 4	
-		w_k = w + k0/2.0		
-		call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
-		if (no_slip) then
+
+			diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
+				& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
+				& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k0(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+			
+	!******** Second point Runge Kutta 4	
+			w_k = w + k0/2.0		
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
+
 			w_k(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
 			w_k(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
 			w_k(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
 			w_k(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
-		end if		
-		diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
-			& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
-		
-		advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
-			& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
-		k1(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+	
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k1(2:qi-1,2:qj-1) = dt*(advec + diffusion)
 
-!******** Troisieme point Runge Kutta 4			
-		w_k = w + k1/2.0
-		call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
-		if (no_slip) then
+	!******** Troisieme point Runge Kutta 4			
+			w_k = w + k1/2.0
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
+
 			w_k(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
 			w_k(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
 			w_k(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
 			w_k(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
-		end if				
-		diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
-			& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
-		
-		advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
-			& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
-		k2(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+				
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k2(2:qi-1,2:qj-1) = dt*(advec + diffusion)
 
-!******** Quatrieme point Runge Kutta 4	
-		w_k = w + k2
-		call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
-		if (no_slip) then
+	!******** Quatrieme point Runge Kutta 4	
+			w_k = w + k2
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
+			
 			w_k(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
 			w_k(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
 			w_k(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
 			w_k(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
-		end if		
-		diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
-			& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+	
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k3(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+
+	!******** Reunion et moyenne ponderee des approximations, calcul de n+1			
+			w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + (k0(2:qi-1,2:qj-1)+2*k1(2:qi-1,2:qj-1)+2*k2(2:qi-1,2:qj-1)+k3(2:qi-1,2:qj-1))/6
+
+		end do
+	else 
+		do i = 1, n_it, 1
+			call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
+
+			diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
+				& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
+				& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k0(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+			
+	!******** Second point Runge Kutta 4	
+			w_k = w + k0/2.0		
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
 		
-		advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
-			& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
-		k3(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k1(2:qi-1,2:qj-1) = dt*(advec + diffusion)
 
-!******** Reunion et moyenne ponderee des approximations, calcul de n+1			
-		w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + (k0(2:qi-1,2:qj-1)+2*k1(2:qi-1,2:qj-1)+2*k2(2:qi-1,2:qj-1)+k3(2:qi-1,2:qj-1))/6
+	!******** Troisieme point Runge Kutta 4			
+			w_k = w + k1/2.0
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
+				
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k2(2:qi-1,2:qj-1) = dt*(advec + diffusion)
 
-	end do
+	!******** Quatrieme point Runge Kutta 4	
+			w_k = w + k2
+			call poisson(w_k,phi,qi,qj,h,delta_convgce, erreur)
+	
+			diffusion = (w_k(3:qi,2:qj-1)+w_k(1:qi-2,2:qj-1)+w_k(2:qi-1,3:qj)+ &
+				& w_k(2:qi-1,1:qj-2)-4*w_k(2:qi-1,2:qj-1))*nu_h2
+			
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w_k(3:qi,2:qj-1)-w_k(1:qi-2,2:qj-1)) &
+				& - (w_k(2:qi-1,3:qj)-w_k(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2		
+			k3(2:qi-1,2:qj-1) = dt*(advec + diffusion)
+
+	!******** Reunion et moyenne ponderee des approximations, calcul de W_n+1			
+			w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + (k0(2:qi-1,2:qj-1)+2*k1(2:qi-1,2:qj-1)+2*k2(2:qi-1,2:qj-1)+k3(2:qi-1,2:qj-1))/6
+
+		end do	
+	end if	
+	
+
 end subroutine jellyfish
-
