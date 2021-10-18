@@ -2,7 +2,7 @@
 Programme python modélisant l'évolution des vortex dans un fluide.
 Possibilité de remplir le domaine de vortex générés aléatoirements.
 
-Méthode basée sur la vorticité et la fonction de courrant, équation de poisson résolue par méthode Gauss-Seidel. L'intégration en temps est réalisée seulon la méthode d'Euler ou Runge-Kutta 4.  
+Méthode basée sur la vorticité et la fonction de courrant, équation de poisson résolue par méthode Gauss-Seidel. L'intégration en temps est réalisée selon la méthode d'Euler ou Runge-Kutta 4.  
 
 Le fluide et ses propriétés est représenté par la classe "sea". Les méthodes de la classe sea sont basée sur l'équation de la vorticité et la fonction de courant. Le résultat est enregistré en gif ou en mp4. 
 
