@@ -14,6 +14,10 @@ from sea import sea
 import numpy as np
 import matplotlib.animation as animation
 from time import time
+from os import mkdir
+
+# Output path
+IMG_OUTPUT = "images_output/"
 
 # img = mpimg.imread('/home/tugdual/Documents/Programmation/vortex/Vortex_random_FFMpegWriter/manu.png')
 # img = np.flipud(img[:,:,0])
@@ -209,9 +213,10 @@ if direct:
     plt.axis("off")
     plt.tight_layout(pad=0)
     nbr = len(frames)
+    mkdir(IMG_OUTPUT)
     for i, frame in enumerate(frames):
         ax1.pcolormesh(X, Y, frame, cmap=cmap, shading=shade, vmax=W_max)
-        fig1.savefig(f"images_output/{i:08}.png")
+        fig1.savefig(f"{IMG_OUTPUT}{i:08}.png")
         sys.stdout.write("\x1b[2K\r    %i images enregistrees sur %i" % (i, nbr))
 
 
