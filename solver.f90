@@ -19,47 +19,28 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 !f2py intent(in) :: delta_convgce, h
 	
 	real(kind=kind_real), dimension(qi,qj) :: phi0
-	real(kind=kind_real) :: h2, ecart, ecart_max
-	integer :: i = 0	
-	integer, dimension(floor((qj-2.0)/2.0)) :: list_j 	
-	
-	list_j = [ (i, i=3, qj ,2) ]
-	
+	real(kind=kind_real) :: h2, ecart, ecart_min
+	integer :: i = 0, j = 0
+
 	h2 = h**2
-	
+
 	ecart = 1
-	
-	ecart_max = delta_convgce**2
-	
-	do while (ecart > ecart_max)
-		i = i+1
+
+	ecart_min = delta_convgce**2
+
+	do while (ecart > ecart_min)
 		phi0 = phi
-		
-	 	phi(2:qi-1:2, 2:qj-1:2) = 0.25*(h2*w(2:qi-1:2, 2:qj-1:2) &
-	 	& + phi(1:qi-2:2, 2:qj-1:2) + &
-	 		& phi(3:qi:2,2:qj-1:2) + phi(2:qi-1:2,1:qj-2:2) + phi(2:qi-1:2,3:qj:2))
-	 	
-	 	phi(3:qi-1:2, 3:qj-1:2) = 0.25*(h2*w(3:qi-1:2, 3:qj-1:2) &
-	 	& + phi(2:qi-2:2, 3:qj-1:2) + &
-	 		& phi(4:qi:2, 3:qj-1:2) + phi(3:qi-1:2, 2:qj-2:2) + phi(3:qi-1:2, 4:qj:2))
-	 	
-	 	phi(3:qi-1:2, 2:qj-1:2) = 0.25*(h2*w(3:qi-1:2, 2:qj-1:2) &
-	 	& + phi(2:qi-2:2, 2:qj-1:2) + &
-	 		& phi(4:qi:2,2:qj-1:2) + phi(3:qi-1:2,1:qj-2:2) + phi(3:qi-1:2,3:qj:2))
-	 	
-	 	phi(4:qi-1:2, 3:qj-1:2) = 0.25*(h2*w(4:qi-1:2, 3:qj-1:2) &
-	 	& + phi(3:qi-2:2, 3:qj-1:2) + &
-	 		& phi(5:qi:2, 3:qj-1:2) + phi(4:qi-1:2, 2:qj-2:2) + phi(4:qi-1:2, 4:qj:2))
-		
-		phi(2, list_j) = 0.25*(h2*w(2, list_j) + phi(1, list_j) + phi(3, list_j) + &
-			& phi(2, list_j-1) + phi(2, list_j+1))
-			
+  		do i=2, qi-1
+			do j=2, qj-1
+			phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
+   			end do
+   		end do
 		ecart = maxval((phi0 - phi)**2)
 		if (i > 100000) then
 			erreur = 1
-			ecart = 0 
+			ecart = 0
 		end if
-	end do			
+	end do
 end subroutine poisson
 !****************************************************************************
 

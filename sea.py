@@ -7,98 +7,90 @@ Created on Sun Jan 10 11:45:13 2021
 import numpy as np
 from math import floor, ceil
 from solver import jellyfish
-from random import uniform 
-#print(jellyfish.__doc__)
+from random import uniform
 
-class sea():
+# print(jellyfish.__doc__)
+
+
+class sea:
     """La classe sea modélise une étendue de fluide en 2 dimensions avec comme
-    attributs les grilles d'espace X et Y, la vorticité W, 
+    attributs les grilles d'espace X et Y, la vorticité W,
     la fonction de courant Phi et le pas de la grille h"""
-    def __init__(self, resolution, L = float(),H  =float()):
-        self._xmax = L/2
-        self._ymax = H/2
+
+    def __init__(self, resolution, L=float(), H=float()):
+        self._xmax = L / 2
+        self._ymax = H / 2
         q = resolution
-        #définition du pas de la grille, h.
-        #On prend en compte la possible diférence entre L et H,
+        # définition du pas de la grille, h.
+        # On prend en compte la possible diférence entre L et H,
         # pas forcément très utile comme fonctionnalité
         if L == H:
-            self._h = L/q
-            self._qx = q
-            self._qy = q
+            self._h = L / q
+            self.qx = q
+            self.qy = q
         elif L > H:
-            self._h = L/q
-            self._qx = q
-            self._qy = int(H/self._h,0)
+            self._h = L / q
+            self.qx = q
+            self.qy = int(H / self._h, 0)
 
         else:
-            self._h = H/q
-            self._qy = q
-            self._qx = int(L/self._h,0)
-        
-        x = np.linspace(-self._xmax, self._xmax,self._qx)
-        y = np.linspace(-self._ymax, self._ymax,self._qy)    
-        self._X, self._Y = np.meshgrid(x,y)
-        self._W = self._X*0
-        self._Phi = self._X*0
-        
-        i_range = self._qy - 2
-        j_range = self._qx - 2
-        
-        slct_grid = np.mgrid[0:i_range,0:j_range]+1 
-        
-        i_space = slct_grid[0,:,:]
-        j_space = slct_grid[1,:,:]
-        
-        self._i = i_space.reshape((1,j_range*i_range))[0,:]
-        self._j = j_space.reshape((1,j_range*i_range))[0,:]            
-    
-    
-    def W(self):
-        return self._W
-    def Phi(self):
-        return self._Phi
-    def X(self):
-        return self._X
-    def Y(self):
-        return self._Y
-    def H(self):
-        return self._h
-    def qx(self):
-        return self._qx
-    def qy(self):
-        return self._qy
-    def set_W(self, A):
-        self._W = A
-    
-    def vortex(self,x,y,sens,largeur=0.1):
+            self._h = H / q
+            self.qy = q
+            self.qx = int(L / self._h, 0)
+
+        x = np.linspace(-self._xmax, self._xmax, self.qx)
+        y = np.linspace(-self._ymax, self._ymax, self.qy)
+        self.X, self.Y = np.meshgrid(x, y)
+        self.W = self.X * 0
+        self.Phi = self.X * 0
+        self.dt = 0.001
+        # precision of the stream function:
+        self.conv = 0.0001
+        # viscosité
+        self.nu = 0
+
+        self.u_t_wall = 0
+        self.u_b_wall = 0
+        self.no_slip = False
+
+    def vortex(self, x, y, sens, largeur=0.1):
         """Créé un vortex de coordonnées x et y"""
         if sens != 0:
-            R = np.sqrt((self._X-x)**2 + (self._Y-y)**2)
-            self._W = self._W + sens*10*np.exp(-R**2*100/(largeur)) # sens*largeur*100/(largeur+R**2)
-    
-    def line(self,x=-0.5,y=0,L=1,vort=10, e=2):
+            R = np.sqrt((self.X - x) ** 2 + (self.Y - y) ** 2)
+            self.W = self.W + sens * 10 * np.exp(
+                -(R ** 2) * 100 / (largeur)
+            )  # sens*largeur*100/(largeur+R**2)
+
+    def line(self, x=-0.5, y=0, L=1, vort=10, e=2):
         """Crée une ligne sur laquelle est concentrée la vorticité,
         une tranche de feuille de vorticité"""
-        x1 = floor(self._qx/2+ x*self._qx/(2*self._xmax))
-        l = floor(L*self._qx/(2*self._xmax))
-        y1 = floor(self._qy/2 + y*self._qy/(2*self._xmax))
-        e = e*self._qy/(4*self._ymax)
+        x1 = floor(self.qx / 2 + x * self.qx / (2 * self._xmax))
+        l = floor(L * self.qx / (2 * self._xmax))
+        y1 = floor(self.qy / 2 + y * self.qy / (2 * self._xmax))
+        e = e * self.qy / (4 * self._ymax)
         e = ceil(e)
-        self._W[y1+e:y1+e+1,x1:x1+l-1] = vort/2 #+ self._W[y1+e:y1+e+1,x1:x1+l-1]
-        self._W[y1-e:y1+e,x1:x1+l-1] = vort #+ self._W[y1-e:y1+e,x1:x1+l-1]
-        self._W[y1-e-1:y1,x1:x1+l-1] = vort/2# + self._W[y1-e-1:y1,x1:x1+l-1]
-        self._W[y1-e:y1+e,x1-1] = vort/2 #+ self._W[y1-e:y1+e,x1-1]
-        self._W[y1-e:y1+e,x1+l-1] = vort/2 #+ self._W[y1-e:y1+e,x1+l-1]
-        
-    def noise(self,intensity):
-        self._W = self._W + ((np.random.random(self._W.shape) - 
-                   np.random.random(self._W.shape)))**7*intensity
-     
-    def rand(self, intensity, L = 0.7, N = 100):
-        x = uniform(-self._xmax*L, self._xmax*L)
-        y = uniform(-self._ymax*L, self._ymax*L)
+        self.W[y1 + e : y1 + e + 1, x1 : x1 + l - 1] = (
+            vort / 2
+        )  # + self.W[y1+e:y1+e+1,x1:x1+l-1]
+        self.W[y1 - e : y1 + e, x1 : x1 + l - 1] = vort  # + self.W[y1-e:y1+e,x1:x1+l-1]
+        self.W[y1 - e - 1 : y1, x1 : x1 + l - 1] = (
+            vort / 2
+        )  # + self.W[y1-e-1:y1,x1:x1+l-1]
+        self.W[y1 - e : y1 + e, x1 - 1] = vort / 2  # + self.W[y1-e:y1+e,x1-1]
+        self.W[y1 - e : y1 + e, x1 + l - 1] = vort / 2  # + self.W[y1-e:y1+e,x1+l-1]
+
+    def noise(self, intensity):
+        self.W = (
+            self.W
+            + ((np.random.random(self.W.shape) - np.random.random(self.W.shape))) ** 7
+            * intensity
+        )
+
+    def rand(self, intensity, L=0.7, N=100):
+        x = uniform(-self._xmax * L, self._xmax * L)
+        y = uniform(-self._ymax * L, self._ymax * L)
         largeur = 0
-        i = 1        
+        i = 1
         xl = []
         yl = []
         xl.append(x)
@@ -106,45 +98,45 @@ class sea():
         while i < N:
             occupe = False
             largeur0 = largeur
-            largeur = uniform(1,20)
+            largeur = uniform(1, 20)
             j = 1
-            while occupe == False and j<len(xl):
-                
-                if (((x-xl[j-1])**2+(y-yl[j-1])**2)**0.5)<(((largeur+largeur0)**0.7)*4/100) :
+            while occupe == False and j < len(xl):
+
+                if (((x - xl[j - 1]) ** 2 + (y - yl[j - 1]) ** 2) ** 0.5) < (
+                    ((largeur + largeur0) ** 0.7) * 4 / 100
+                ):
                     occupe = True
-                j +=1    
+                j += 1
             if occupe == False:
-                i += 1                
-                if largeur > 8: 
-                    sens = uniform(-intensity**0.8,intensity**0.8)
+                i += 1
+                if largeur > 8:
+                    sens = uniform(-(intensity ** 0.8), intensity ** 0.8)
                 else:
-                    sens = uniform(-intensity,intensity)
-                self.vortex( x, y, sens, largeur)
+                    sens = uniform(-intensity, intensity)
+                self.vortex(x, y, sens, largeur)
                 xl.append(x)
-                yl.append(y)                
-                
-            x = uniform(-self._xmax*L, self._xmax*L)
-            y = uniform(-self._ymax*L, self._ymax*L)
-            
-        
-        
-        """for i in range(10):
-            x = uniform(-self._xmax*0.7, self._xmax*0.7)
-            y = uniform(-self._ymax*0.7, self._ymax*0.7)
-            largeur = uniform(1,8)
-            sens = uniform(-intensity**0.9,intensity**0.9)
-            self.vortex( x, y, sens, largeur)"""
-        
+                yl.append(y)
 
+            x = uniform(-self._xmax * L, self._xmax * L)
+            y = uniform(-self._ymax * L, self._ymax * L)
 
-    def Vortex_solv(self, tmax=1, dt=0.001, delta_convgce=0.0001, nu = 0,
-                    t_wall=0, b_wall=0, no_slip = False):
+    def Vortex_solv(
+        self,
+        tmax=1,
+    ):
         erreur = 0
-        """ Résout l'équation de la vorticité"""     
-        self._W, self._Phi, erreur = jellyfish(self._W, self._Phi, tmax, dt,
-                                          self._h, delta_convgce, nu,
-                                          t_wall ,b_wall, erreur, no_slip)
+        """ Résout l'équation de la vorticité"""
+        self.W, self.Phi, erreur = jellyfish(
+            self.W,
+            self.Phi,
+            tmax,
+            self.dt,
+            self._h,
+            self.conv,
+            self.nu,
+            self.u_t_wall,
+            self.u_b_wall,
+            erreur,
+            self.no_slip,
+        )
         return erreur
-    
-
-
