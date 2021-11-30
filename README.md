@@ -1,8 +1,9 @@
 # Vortex
 **Dynamique des vortex**
-- Ce programme est un premier essais assez naif et daté. Une remise en forme du code et un passage en volume fini seraient nécesaires, cela dit il reste instructif pour une premiere approche. 
 
-![alt text](vortex.gif)
+Ce programme est un premier essais assez naif et daté. Une remise en forme du code et un passage en volume fini seraient nécesaires, cela dit il reste instructif pour une premiere approche. 
+
+<img src="vortex.gif" align="center" width="25%"></img>
 
 Possibilité de remplir le domaine de vortex générés aléatoirements.
 
