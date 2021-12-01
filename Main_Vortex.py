@@ -21,7 +21,7 @@ IMG_OUTPUT = "images_output/"
 
 # Paramètres de base de l'affichage
 # Temps de modélisation entre chaque image enregistrée
-Delta_t_img = 0.04
+Delta_t_img = 0.06
 # temps de simulation
 t_max = 4
 # Apparence de l'affichage "nearest" pour pixels, "gouraud" pour lisse.
@@ -44,6 +44,7 @@ pond.no_slip = False
 
 # time step:
 pond.dt = 0.0001
+# Kinematic viscosity
 pond.nu = 0.001
 
 # Création de vortex dans pond.
@@ -161,11 +162,11 @@ if direct == False:
 
 if direct:
     # Préparation de l'affichage pour enregistrement
+    makedirs(IMG_OUTPUT, exist_ok=True)
     fig1, ax1 = plt.subplots(num="animation", figsize=(taille, taille))
     plt.axis("off")
     plt.tight_layout(pad=0)
     nbr = len(frames)
-    makedirs(IMG_OUTPUT, exist_ok=True)
     im = ax1.imshow(frames[0], cmap=cmap)
     for i, frame in enumerate(frames):
         im.set_array(frame)

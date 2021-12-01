@@ -30,9 +30,9 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 
 	do while (ecart > ecart_min)
 		phi0 = phi
-  		do i=2, qi-1
-			do j=2, qj-1
-			phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
+		do j=2, qj-1
+			do i=2, qi-1
+				phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
    			end do
    		end do
 		ecart = maxval((phi0 - phi)**2)

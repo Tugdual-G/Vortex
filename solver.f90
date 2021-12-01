@@ -30,9 +30,9 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 
 	do while (ecart > ecart_min)
 		phi0 = phi
-  		do i=2, qi-1
-			do j=2, qj-1
-			phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
+		do j=2, qj-1
+			do i=2, qi-1
+				phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
    			end do
    		end do
 		ecart = maxval((phi0 - phi)**2)
@@ -44,7 +44,7 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 end subroutine poisson
 !****************************************************************************
 
-subroutine jellyfish(w, phi, tmax, dt, h, delta_convgce, nu, u_top_wall, u_bot_wall, qi, qj, erreur)
+subroutine jellyfish(w, phi, tmax, dt, h, delta_convgce, nu, u_top_wall, u_bot_wall, qi, qj, erreur, no_slip)
 	implicit none
 	integer, parameter :: kind_real = SELECTED_REAL_KIND(p=15,r=6)
 
@@ -59,7 +59,10 @@ subroutine jellyfish(w, phi, tmax, dt, h, delta_convgce, nu, u_top_wall, u_bot_w
 	
 	integer, intent(in) :: qi, qj
 !f2py intent(in) :: qi, qj	
-	
+
+	logical, intent(in) :: no_slip
+!f2py intent(in) :: no_slip
+
 	real(kind=kind_real), dimension(qi-2,qj-2) :: advec, diffusion
 	
 	real(kind=kind_real) :: nu_h2, h_2, h2
@@ -71,23 +74,38 @@ subroutine jellyfish(w, phi, tmax, dt, h, delta_convgce, nu, u_top_wall, u_bot_w
 	h_2 = 2.0*h
 	nu_h2 = nu/(h**2)
 	n_it = ceiling(tmax/dt) 
-	
-	do i = 1, n_it, 1
-		call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
-		w(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
-		w(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
-		w(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
-		w(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
-		
-		diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
-			& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
-		
-		advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
-			& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2
 
-		w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + dt*(advec + diffusion)
+	if (no_slip) then
+		do i = 1, n_it, 1
+			call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
+			w(2:qi-1,1) = -phi(2:qi-1,2)*2.0/h2     !mur gauche
+			w(2:qi-1,qj) = -phi(2:qi-1,qj-1)*2.0/h2		!mur droite
+			w(1,2:qj-1) = -phi(2,2:qj-1)*2.0/h2 + u_bot_wall*2.0/h		!mur bas
+			w(qi,2:qj-1) = -phi(qi-1,2:qj-1)*2.0/h2 - u_top_wall*2.0/h	!mur haut
 
-	end do
+			diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
+				& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
+
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
+				& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2
+
+			w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + dt*(advec + diffusion)
+
+		end do
+	else
+		do i = 1, n_it, 1
+			call poisson(w,phi,qi,qj,h,delta_convgce, erreur)
+
+			diffusion = (w(3:qi,2:qj-1)+w(1:qi-2,2:qj-1)+w(2:qi-1,3:qj)+ &
+				& w(2:qi-1,1:qj-2)-4*w(2:qi-1,2:qj-1))*nu_h2
+
+			advec = ((phi(2:qi-1,3:qj)-phi(2:qi-1,1:qj-2))*(w(3:qi,2:qj-1)-w(1:qi-2,2:qj-1)) &
+				& - (w(2:qi-1,3:qj)-w(2:qi-1,1:qj-2))*(phi(3:qi,2:qj-1)-phi(1:qi-2,2:qj-1)))/h_2
+
+			w(2:qi-1,2:qj-1) = w(2:qi-1,2:qj-1) + dt*(advec + diffusion)
+
+		end do
+    end if
 end subroutine jellyfish
 
 

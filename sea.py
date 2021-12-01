@@ -45,7 +45,7 @@ class sea:
         self.Phi = self.X * 0
         self.dt = 0.001
         # precision of the stream function:
-        self.conv = 0.0001
+        self.conv = 0.1
         # viscosité
         self.nu = 0.0001
 
