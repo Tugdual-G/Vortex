@@ -3,7 +3,7 @@
 
 Ce programme est un premier essais assez naif et daté. Une remise en forme du code, un passage en volume fini ou simplement le passage sur une grille alternée seraient nécesaires, cela dit, le principe est simple et intuitif pour une premiere approche. 
 
-<img src="vortex.gif" align="center" width="25%"></img>
+<img src="vortex.gif" align="center" width="33%"></img>
 
 Possibilité de remplir le domaine de vortex générés aléatoirements.
 
