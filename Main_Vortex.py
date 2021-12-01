@@ -12,22 +12,20 @@ import math
 import sys
 from sea import sea
 import numpy as np
-import matplotlib.animation as animation
 from time import time
-from os import mkdir
+from os import makedirs
+from realtime_display import Plot_sender
 
 # Output path
 IMG_OUTPUT = "images_output/"
 
-# img = mpimg.imread('/home/tugdual/Documents/Programmation/vortex/Vortex_random_FFMpegWriter/manu.png')
-# img = np.flipud(img[:,:,0])
-
 # Paramètres de base de l'affichage
 # Temps de modélisation entre chaque image enregistrée
-Delta_t_img = 0.02
+Delta_t_img = 0.04
+# temps de simulation
+t_max = 4
 # Apparence de l'affichage "nearest" pour pixels, "gouraud" pour lisse.
-shade = "gouraud"
-cmap = "viridis"
+cmap = "inferno"
 # False veut dire que les couleurs sont normalisés à chaque image.
 vmax = False
 
@@ -46,39 +44,25 @@ pond.no_slip = False
 
 # time step:
 pond.dt = 0.0001
+pond.nu = 0.001
 
 # Création de vortex dans pond.
 # Récupération de la grille d'espace.
 X = pond.X
 Y = pond.Y
 
+# Random vortices
 pond.rand(20, L=0.9, N=50)
 # pond.noise(50)
 # pond.line() crée une ligne de vorticité
 # pond.line(-2.5,0.75,5,300,0.04)
 # pond.line(-2.5,-0.75,5,300,0.04)
 
+# define vortices
 pond.vortex(-1, 0.7, sens=30, largeur=4)
 pond.vortex(-1, -0.7, sens=-30, largeur=4)
 pond.vortex(-2.5, 0.7, sens=30, largeur=4)
 pond.vortex(-2.5, -0.7, sens=-30, largeur=4)
-
-
-# w_max permet de niveller la teinte de l'affichache
-W_max = None
-if vmax:
-    W_max = np.amax(pond.W()[2 : pond.qy - 2, 2 : pond.qx - 2]) * 1.4
-
-# Affichage des conditions initiales.
-print("Patientez...")
-plt.figure("glimpse", figsize=(taille, taille))
-plt.clf()
-plt.pcolormesh(X, Y, pond.W, cmap=cmap, shading=shade, vmax=W_max)
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show(block=False)
-plt.pause(1)
-plt.close()
 
 
 # temps de simulation
@@ -86,11 +70,7 @@ direct = False
 while True:
     try:
         while True:
-            rep_direct = str(
-                input(
-                    "Calcul direct sans pause et sans affichage intermédiaire? [y/n]:"
-                )
-            )
+            rep_direct = str(input("Calcul direct sans pause ? [y/n]:"))
             if rep_direct == "y":
                 direct = True
                 break
@@ -101,36 +81,17 @@ while True:
                 print("[y/n]?")
         break
     except TypeError:
-        print("Tu fais quoi là !?")
+        print("!?")
 
-if direct == True:
-    while True:
-        try:
-            t_max = float(input("Temps de simulation en secondes (0 = Exit):"))
 
-            break
-        except ValueError:
-            print("Tu fais quoi là !?")
-else:
-    while True:
-        try:
-            t_max = float(
-                input(
-                    "Temps de simulation en seconde avant prochaine pause (0 = Exit):"
-                )
-            )
-
-            break
-        except ValueError:
-            print("Tu fais quoi là!?")
-
-#%%
 moyenne = 0
 somme_t_ex = 0
 somme_t = 0
 # frames liste les valeurs de la vorticité au cour du temps.
 frames = [np.abs(pond.W)]
 it = 0
+# Initialize the real-time display
+splot = Plot_sender()
 while t_max > 0:
     somme_t += t_max
     erreur = 0
@@ -144,6 +105,7 @@ while t_max > 0:
 
         # Utilliser .copy() pour ne pas stoker des arrays mutables
         frames += [np.abs(pond.W)]
+        splot.plot_send(pond.W)
 
         sys.stdout.write(
             "\x1b[2K\r    %i iterations sur %i" % (i, math.ceil(t_max / Delta_t_img))
@@ -151,29 +113,17 @@ while t_max > 0:
 
     temps_ex = time() - t0
     somme_t_ex += temps_ex
-    print("\ntemps d'execution=", round(temps_ex, 2), "s")
+    print(f"\ntemps d'execution={temps_ex:.2} s")
     moyenne = somme_t_ex / somme_t
-    print("temps moyen d'execution par secondes simulées:", round(moyenne, 3))
+    print(f"temps moyen d'execution par secondes simulées: {moyenne:.2} s")
     # Affichage de l'état de pond après calcul jusqu'au temps demandé.
-    print("temps final simulé : ", round(somme_t, 2))
-    print("max vorticité =", np.amax(pond.W))
-    print("max f courant =", np.amax(pond.Phi))
-    print("Arrets forcés convergence de phi pour le cycle:", int(erreur))
-    if direct == False:
-        plt.figure("glimpse", figsize=(taille, taille))
-        plt.clf()
-        plt.pcolormesh(X, Y, pond.W, cmap=cmap, shading=shade, vmax=W_max)
-        plt.axis("off")
-        plt.tight_layout(pad=0)
-        plt.show()
-        plt.close()
+    print(f"temps final simulé : {somme_t} s ")
+    print(f"Arrets forcés convergence phi:{erreur}")
     if direct:
         t_max = 0
     else:
         # Repartir pour un tour?
         t_t = temps_ex / t_max
-        print("Temps d'execution estimé par secondes simulées:", round(t_t, 0), "s")
-
         while True:
             try:
                 t_max = float(
@@ -184,9 +134,11 @@ while t_max > 0:
 
                 break
             except ValueError:
-                print("Tu fais quoi là!?")
+                print("!?")
 
-        print("Temps d'execution estimé:", round(t_t * t_max, 0), "s")
+        print(f"Temps d'execution estimé: {t_t*t_max:.1} s")
+
+splot.plot_send(pond.W, finished=True)
 
 
 if direct == False:
@@ -205,7 +157,7 @@ if direct == False:
 
             break
         except TypeError:
-            print("Tu fais quoi là !?")
+            print("!?")
 
 if direct:
     # Préparation de l'affichage pour enregistrement
@@ -213,11 +165,12 @@ if direct:
     plt.axis("off")
     plt.tight_layout(pad=0)
     nbr = len(frames)
-    mkdir(IMG_OUTPUT)
+    makedirs(IMG_OUTPUT, exist_ok=True)
+    im = ax1.imshow(frames[0], cmap=cmap)
     for i, frame in enumerate(frames):
-        ax1.pcolormesh(X, Y, frame, cmap=cmap, shading=shade, vmax=W_max)
+        im.set_array(frame)
         fig1.savefig(f"{IMG_OUTPUT}{i:08}.png")
-        sys.stdout.write("\x1b[2K\r    %i images enregistrees sur %i" % (i, nbr))
+        sys.stdout.write("\x1b[2K\r    %i images enregistrees sur %i" % (i + 1, nbr))
 
 
 print("\nFIN")

@@ -47,7 +47,7 @@ class sea:
         # precision of the stream function:
         self.conv = 0.0001
         # viscosité
-        self.nu = 0
+        self.nu = 0.0001
 
         self.u_t_wall = 0
         self.u_b_wall = 0
