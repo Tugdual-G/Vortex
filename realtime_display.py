@@ -28,7 +28,7 @@ class Plot_process:
         self.fig.canvas.draw()
         return True
 
-    def __call__(self, pipe, freq):
+    def __call__(self, pipe, period):
         # print("starting plotter...")
 
         self.pipe = pipe
@@ -40,7 +40,8 @@ class Plot_process:
             self.im = plt.imshow(recieve, self.cmap)
         else:
             print("pas de tread plot lance")
-        timer = self.fig.canvas.new_timer(interval=freq)
+        # the interval is in millisecond
+        timer = self.fig.canvas.new_timer(interval=period * 1000)
         timer.add_callback(self.call_back)
         timer.start()
 
@@ -49,16 +50,16 @@ class Plot_process:
 
 
 class Plot_sender:
-    def __init__(self, freq):
+    def __init__(self, period):
         """Send plotting data to a subprocess."""
-        self.freq = freq
+        self.period = period
         self.plot_pipe, plotter_pipe = mp.Pipe()
         self.plotter = Plot_process()
         self.plot_process = mp.Process(
             target=self.plotter,
             args=(
                 plotter_pipe,
-                self.freq,
+                self.period,
             ),
             daemon=True,
         )

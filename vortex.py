@@ -12,8 +12,8 @@ import math
 import sys
 from sea import sea
 import numpy as np
-from time import time
-from os import makedirs
+from time import time, sleep
+from os import makedirs, wait
 from realtime_display import Plot_sender
 
 # Output path
@@ -81,7 +81,7 @@ it = 0
 pond.Vortex_solv(tmax=pond.dt * 2)
 print(f"max stream function = {np.amax(np.abs(pond.Phi))}")
 # Initialize the real-time display
-splot = Plot_sender(freq=Delta_t_img)
+splot = Plot_sender(period=Delta_t_img)
 while t_max > 0:
     somme_t += t_max
     erreur = 0
@@ -108,7 +108,6 @@ while t_max > 0:
     print(f"temps moyen d'execution par secondes simulées: {moyenne:.2} s")
     # Affichage de l'état de pond après calcul jusqu'au temps demandé.
     print(f"temps final simulé : {somme_t} s ")
-    print(f"Arrets forcés convergence phi:{erreur}")
     if direct:
         t_max = 0
     else:
@@ -127,7 +126,7 @@ while t_max > 0:
                 print("!?")
 
         print(f"Temps d'execution estimé: {t_t*t_max:.1} s")
-
+sleep(2)
 splot.plot_send(pond.W, finished=True)
 
 
@@ -161,6 +160,3 @@ if save:
         im.set_array(frame)
         fig1.savefig(f"{IMG_OUTPUT}{i:08}.png")
         sys.stdout.write("\x1b[2K\r    %i images enregistrees sur %i" % (i + 1, nbr))
-
-
-print("\nFIN")
