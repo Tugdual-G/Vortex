@@ -17,6 +17,11 @@ Le fluide et ses propriétés est représenté par la classe "sea". Les méthode
 Nécessite numpy, matplotlib, gfortran. Au lancement du programme, des vortex sont générés aléatoirement en tant que conditions initiales. Possibilité de créer des vortex circulaires avec la methode vortex, ou des feuilles de vorticité avec la méthode line. 
 
 ## Utilisation 
+
+Lancement de la simulation:
+
+    python vortex.py
+
 Module solveur Euler en fortran à compiler avec la comande:
 
     python3 -m numpy.f2py -c -m solver solver.f90
