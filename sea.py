@@ -44,8 +44,8 @@ class sea:
         self.W = self.X * 0
         self.Phi = self.X * 0
         self.dt = 0.001
-        # precision of the stream function:
-        self.conv = 0.1
+        # max mean residual of the stream function:
+        self.max_residual = 0.01
         # viscosité
         self.nu = 0.0001
 
@@ -132,7 +132,7 @@ class sea:
             tmax,
             self.dt,
             self._h,
-            self.conv,
+            self.max_residual,
             self.nu,
             self.u_t_wall,
             self.u_b_wall,

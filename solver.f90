@@ -18,27 +18,30 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 	real(kind=kind_real), intent(in) :: delta_convgce, h
 !f2py intent(in) :: delta_convgce, h
 	
-	real(kind=kind_real), dimension(qi,qj) :: phi0
-	real(kind=kind_real) :: h2, ecart, ecart_min
-	integer :: i = 0, j = 0
+	real(kind=kind_real) :: h2, ecart_min, r_sum=0, ih2
+	integer :: i = 0, j = 0, k=0
 
 	h2 = h**2
+ 	ih2 = 1/h2
 
-	ecart = 1
+	ecart_min = delta_convgce*qi*qj
+ 	r_sum = ecart_min + 1
 
-	ecart_min = delta_convgce**2
-
-	do while (ecart > ecart_min)
-		phi0 = phi
+	do while (r_sum > ecart_min)
+  		r_sum = 0
+		do k=0, 5
+			do j=2, qj-1
+				do i=2, qi-1
+					phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
+				end do
+			end do
+	 	end do
 		do j=2, qj-1
 			do i=2, qi-1
 				phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
-   			end do
-   		end do
-		ecart = maxval((phi0 - phi)**2)
-		if (i > 100000) then
-			erreur = 1
-			ecart = 0
+				r_sum += ABS(w(i,j)+(phi(i-1, j) + phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1) - 4*phi(i, j))*ih2)
+			end do
+		end do
 		end if
 	end do
 end subroutine poisson
