@@ -21,16 +21,16 @@ IMG_OUTPUT = "images_output/"
 
 # Paramètres de base de l'affichage
 # Temps de modélisation entre chaque image enregistrée
-Delta_t_img = 0.06
+Delta_t_img = 0.05
 # temps de simulation
-t_max = 4
+t_max = 10
 # Apparence de l'affichage "nearest" pour pixels, "gouraud" pour lisse.
 cmap = "inferno"
 # False veut dire que les couleurs sont normalisés à chaque image.
 vmax = False
 
 # number of grid points in x and y directions:
-reso = 128
+reso = 256
 # Size of the video in inchs:
 taille = 3
 
@@ -43,7 +43,7 @@ pond.u_b_wall = 0
 pond.no_slip = False
 
 # time step:
-pond.dt = 0.0001
+pond.dt = 0.01
 # Kinematic viscosity
 pond.nu = 0.001
 
@@ -60,10 +60,10 @@ pond.rand(20, L=0.9, N=50)
 # pond.line(-2.5,-0.75,5,300,0.04)
 
 # define vortices
-pond.vortex(-1, 0.7, sens=30, largeur=4)
-pond.vortex(-1, -0.7, sens=-30, largeur=4)
-pond.vortex(-2.5, 0.7, sens=30, largeur=4)
-pond.vortex(-2.5, -0.7, sens=-30, largeur=4)
+# pond.vortex(-1, 0.7, sens=30, largeur=4)
+# pond.vortex(-1, -0.7, sens=-30, largeur=4)
+# pond.vortex(-2.5, 0.7, sens=30, largeur=4)
+# pond.vortex(-2.5, -0.7, sens=-30, largeur=4)
 
 
 # temps de simulation
@@ -91,8 +91,10 @@ somme_t = 0
 # frames liste les valeurs de la vorticité au cour du temps.
 frames = [np.abs(pond.W)]
 it = 0
+pond.Vortex_solv(tmax=pond.dt * 2)
+print(f"max stream function = {np.amax(np.abs(pond.Phi))}")
 # Initialize the real-time display
-splot = Plot_sender()
+splot = Plot_sender(freq=Delta_t_img)
 while t_max > 0:
     somme_t += t_max
     erreur = 0
