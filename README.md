@@ -1,6 +1,8 @@
 # Vortex
 **Dynamique des vortex**
 
+Calcul et visualisation en temps réel de la dynamique d'un fluide.
+
 Ce programme est un premier essais assez naif et daté. Une remise en forme du code, un passage en volume fini et l'utilisation d'un solveur multigrilles seraient nécesaire, cela dit, le principe est simple et intuitif pour une premiere approche. 
 
 <img src="vortex.gif" align="center" width="33%"></img>
@@ -15,6 +17,11 @@ Le fluide et ses propriétés est représenté par la classe "sea". Les méthode
 Nécessite numpy, matplotlib, gfortran. Au lancement du programme, des vortex sont générés aléatoirement en tant que conditions initiales. Possibilité de créer des vortex circulaires avec la methode vortex, ou des feuilles de vorticité avec la méthode line. 
 
 ## Utilisation 
+
+Lancement de la simulation:
+
+    python vortex.py
+
 Module solveur Euler en fortran à compiler avec la comande:
 
     python3 -m numpy.f2py -c -m solver solver.f90
