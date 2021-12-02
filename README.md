@@ -22,7 +22,9 @@ Lancement de la simulation:
 
     python vortex.py
 
-Module solveur Euler en fortran à compiler avec la comande:
+**Note**
+
+Si besoin, module solveur Euler en fortran à compiler avec la comande:
 
     python3 -m numpy.f2py -c -m solver solver.f90
 
