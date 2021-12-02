@@ -66,23 +66,10 @@ pond.rand(20, L=0.9, N=50)
 # pond.vortex(-2.5, -0.7, sens=-30, largeur=4)
 
 
-# temps de simulation
-direct = False
-while True:
-    try:
-        while True:
-            rep_direct = str(input("Calcul direct sans pause ? [y/n]:"))
-            if rep_direct == "y":
-                direct = True
-                break
-            elif rep_direct == "n":
-                direct = False
-                break
-            else:
-                print("[y/n]?")
-        break
-    except TypeError:
-        print("!?")
+# calcul direct sans arret intermediaire
+direct = True
+# enregistrement des images
+save = False
 
 
 moyenne = 0
@@ -144,16 +131,16 @@ while t_max > 0:
 splot.plot_send(pond.W, finished=True)
 
 
-if direct == False:
+if direct == False and save:
     while True:
         try:
             while True:
                 rep_enr = str(input("Enregister images? [y/n]:"))
                 if rep_enr == "y":
-                    direct = True
+                    save = True
                     break
                 elif rep_enr == "n":
-                    direct = False
+                    save = False
                     break
                 else:
                     print("[y/n]?")
@@ -162,7 +149,7 @@ if direct == False:
         except TypeError:
             print("!?")
 
-if direct:
+if save:
     # Préparation de l'affichage pour enregistrement
     makedirs(IMG_OUTPUT, exist_ok=True)
     fig1, ax1 = plt.subplots(num="animation", figsize=(taille, taille))
