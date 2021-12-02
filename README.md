@@ -1,6 +1,8 @@
 # Vortex
 **Dynamique des vortex**
 
+Calcul et visualisation en temps réel de la dynamique d'un fluide.
+
 Ce programme est un premier essais assez naif et daté. Une remise en forme du code, un passage en volume fini et l'utilisation d'un solveur multigrilles seraient nécesaire, cela dit, le principe est simple et intuitif pour une premiere approche. 
 
 <img src="vortex.gif" align="center" width="33%"></img>
