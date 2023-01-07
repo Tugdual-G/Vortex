@@ -39,10 +39,9 @@ subroutine poisson(w,phi,qi,qj,h,delta_convgce, erreur)
 		do j=2, qj-1
 			do i=2, qi-1
 				phi(i, j) = 0.25*(h2*w(i, j) + phi(i-1, j) +phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1))
-				r_sum += ABS(w(i,j)+(phi(i-1, j) + phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1) - 4*phi(i, j))*ih2)
+				r_sum = r_sum + ABS(w(i,j)+(phi(i-1, j) + phi(i+1, j) + phi(i ,j-1) + phi(i ,j+1) - 4*phi(i, j))*ih2)
 			end do
 		end do
-		end if
 	end do
 end subroutine poisson
 
