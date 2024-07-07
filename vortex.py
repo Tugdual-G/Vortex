@@ -10,11 +10,11 @@ Created on Sun Nov 29 21:03:33 2020
 import matplotlib.pyplot as plt
 import math
 import sys
-from sea import sea
+from vortex.sea import sea
 import numpy as np
 from time import time, sleep
-from os import makedirs, wait
-from realtime_display import Plot_sender
+from os import makedirs
+from vortex.realtime_display import Plot_sender
 
 # Output path
 IMG_OUTPUT = "images_output/"
@@ -54,17 +54,6 @@ Y = pond.Y
 
 # Random vortices
 pond.rand(20, L=0.9, N=50)
-# pond.noise(50)
-# pond.line() crée une ligne de vorticité
-# pond.line(-2.5,0.75,5,300,0.04)
-# pond.line(-2.5,-0.75,5,300,0.04)
-
-# define vortices
-# pond.vortex(-1, 0.7, sens=30, largeur=4)
-# pond.vortex(-1, -0.7, sens=-30, largeur=4)
-# pond.vortex(-2.5, 0.7, sens=30, largeur=4)
-# pond.vortex(-2.5, -0.7, sens=-30, largeur=4)
-
 
 # calcul direct sans arret intermediaire
 direct = True

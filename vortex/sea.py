@@ -6,7 +6,7 @@ Created on Sun Jan 10 11:45:13 2021
 """
 import numpy as np
 from math import floor, ceil
-from solver import jellyfish
+from vortex.solver import jellyfish
 from random import uniform
 
 # print(jellyfish.__doc__)
@@ -58,7 +58,7 @@ class sea:
         if sens != 0:
             R = np.sqrt((self.X - x) ** 2 + (self.Y - y) ** 2)
             self.W = self.W + sens * 10 * np.exp(
-                -(R ** 2) * 100 / (largeur)
+                -(R**2) * 100 / (largeur)
             )  # sens*largeur*100/(largeur+R**2)
 
     def line(self, x=-0.5, y=0, L=1, vort=10, e=2):
@@ -110,7 +110,7 @@ class sea:
             if occupe == False:
                 i += 1
                 if largeur > 8:
-                    sens = uniform(-(intensity ** 0.8), intensity ** 0.8)
+                    sens = uniform(-(intensity**0.8), intensity**0.8)
                 else:
                     sens = uniform(-intensity, intensity)
                 self.vortex(x, y, sens, largeur)
@@ -122,7 +122,7 @@ class sea:
 
     def Vortex_solv(
         self,
-        tmax=1,
+        tmax=1.0,
     ):
         erreur = 0
         """ Résout l'équation de la vorticité"""
