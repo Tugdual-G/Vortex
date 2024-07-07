@@ -21,19 +21,19 @@ La vorticité est définie comme $\bf{\omega} = \nabla \times \bf{u}$, cette qua
 
 Pour un fluide de densité et viscosité constante en trois dimensions,
 $$\nabla \times \left( \frac{D \bf{u}}{D t} = -\frac{1}{\rho} \nabla p + \bf{g} + \nu \nabla^2 \bf{u} \right)$$
-$$\implies \frac{D \bf{\omega}}{D t} = \nabla \bf{u} \bf{\omega} + \nu \nabla^2 \bf{\omega}$$
+$$\implies \frac{D \bf{\omega}}{D t} = \nabla \bf{u} ~ \bf{\omega} + \nu \nabla^2 \bf{\omega}$$
 
 Dans un flux en deux dimensions, les lignes de vorticité ne peuvent pas être étirées et la vorticité doit se conserver, l'équation prend alors la forme d'une équation d'advection-diffusion non-linéaire,
 $$\frac{D \omega}{D t} = \nu \nabla^2 \omega$$
 du point de vue Eulerien,
-$$\frac{\partial \omega}{\partial t} + \nabla \omega \bf{u} =  \nu \nabla^2 \omega$$
+$$\frac{\partial \omega}{\partial t} + \nabla \omega ~ \bf{u} =  \nu \nabla^2 \omega$$
 
 On utilise ensuite la fonction de courant $\psi$ pour résoudre l'équation. 
 $\psi$ est définie comme potentiel vecteur tel que,
 $$\bf{u} = \nabla \times \bf{\psi}$$
 
 L'équation de la vorticité en deux dimensions peut se reformuler comme,
-$$\frac{\partial \omega}{\partial t}  =  - u \frac{\partial \omega}{\partial x} + v \frac{\partial \omega}{\partial y} \nu \nabla^2 \omega$$
+$$\frac{\partial \omega}{\partial t}  =  - u \frac{\partial \omega}{\partial x} + v \frac{\partial \omega}{\partial y}  + \nu \nabla^2 \omega$$
 On dispose également de la relation, 
 $$\omega = - \nabla^2 \psi$$
 Avec les conditions aux limites du domaine ainsi que des conditions initiales on obtient enfin un problème traitable numériquement. 
