@@ -13,6 +13,16 @@ Méthode basée sur la vorticité et la fonction de courrant, équation de poiss
 
 Le fluide et ses propriétés est représenté par la classe "sea". Les méthodes de la classe sea sont basée sur l'équation de la vorticité et la fonction de courant.
 
+## Méthode
+La vorticité est définie comme $\omega = \nabla \times u$.
+Pour un fluide de densité et viscosité constante en 3 dimensions,
+$$\nabla \times \left( \frac{D u}{D t} = -\frac{1}{\rho} \nabla p + g + \nu \nabla^2 u \right)$$
+$$\implies \frac{D \omega}{D t} = \left( \omega \cdot \nabla \right) u + \nu \nabla^2 \omega$$
+
+Dans un flux en 2 dimensions, les lignes de vorticité ne peuvent pas être étirées et la vorticité doit se conserver, l'équation prend alors la forme d'une équation d'advection-diffusion non-linéaire,
+$$\frac{D \omega}{D t} = \nu \nabla^2 \omega$$
+
+
 ## Prérequis
 Nécessite python 3, numpy, et matplotlib. Au lancement du programme, des vortex sont générés aléatoirement en tant que conditions initiales. Possibilité de créer des vortex circulaires avec la methode vortex, ou des feuilles de vorticité avec la méthode line. 
 
