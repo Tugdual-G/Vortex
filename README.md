@@ -23,7 +23,7 @@ Pour un fluide de densité et viscosité constante en trois dimensions,
 $$\nabla \times \left( \frac{D \boldsymbol{u}}{D t} = -\frac{1}{\rho} \nabla p + \boldsymbol{g} + \nu \nabla^2 \boldsymbol{u} \right)$$
 $$\implies \frac{D \boldsymbol{\omega}}{D t} = \nabla \boldsymbol{u} ~ \boldsymbol{\omega} + \nu \nabla^2 \boldsymbol{\omega}$$
 
-Dans un flux en deux dimensions, les lignes de vorticité ne peuvent pas être étirées et la vorticité doit se conserver, l'équation prend alors la forme d'une équation d'advection-diffusion non-linéaire,
+Dans un écoulement en deux dimensions, les lignes de vorticité ne peuvent pas être étirées et la vorticité doit se conserver, l'équation prend alors la forme d'une équation d'advection-diffusion non-linéaire,
 $$\frac{D \omega}{D t} = \nu \nabla^2 \omega$$
 du point de vue Eulerien,
 $$\frac{\partial \omega}{\partial t} + \nabla \omega ~ \boldsymbol{u} =  \nu \nabla^2 \omega$$
